@@ -275,12 +275,16 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				String[] dependsOn = mbd.getDependsOn();
 				if (dependsOn != null) {
 					for (String dep : dependsOn) {
+						// <1> 若给定的依赖 bean 已经注册为依赖给定的 bean
+						// 即循环依赖的情况，抛出 BeanCreationException 异常
 						if (isDependent(beanName, dep)) {
 							throw new BeanCreationException(mbd.getResourceDescription(), beanName,
 									"Circular depends-on relationship between '" + beanName + "' and '" + dep + "'");
 						}
+						//校验成功的话对依赖进行注册
 						registerDependentBean(dep, beanName);
 						try {
+							//递归处理，实例化依赖bean
 							getBean(dep);
 						}
 						catch (NoSuchBeanDefinitionException ex) {
