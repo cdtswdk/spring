@@ -1368,13 +1368,18 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// <1> 在设置属性之前给 InstantiationAwareBeanPostProcessors 最后一次改变 bean 的机会
 		if (!mbd.isSynthetic() // bean 不是"合成"的，即未由应用程序本身定义
 				&& hasInstantiationAwareBeanPostProcessors()) {
+			// 迭代所有的 BeanPostProcessors
 			for (InstantiationAwareBeanPostProcessor bp : getBeanPostProcessorCache().instantiationAware) {
+				// postProcessAfterInstantiation：如果应该在 bean上面设置属性则返回 true，否则返回 false
+				// 一般情况下，应该是返回true 。
+				// 返回 false 的话，将会阻止在此 Bean 实例上调用任何后续的 InstantiationAwareBeanPostProcessor 实例。
 				if (!bp.postProcessAfterInstantiation(bw.getWrappedInstance(), beanName)) {
 					return;
 				}
 			}
 		}
 
+		// bean 的属性值
 		PropertyValues pvs = (mbd.hasPropertyValues() ? mbd.getPropertyValues() : null);
 
 		int resolvedAutowireMode = mbd.getResolvedAutowireMode();
