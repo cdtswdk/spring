@@ -199,11 +199,15 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		// 从单例缓冲中加载 bean
 		Object singletonObject = this.singletonObjects.get(beanName);
 		// 缓存中的 bean 为空，且当前 bean 正在创建
-		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
+		if (singletonObject == null
+				// 判断当前 singleton bean 是否处于创建中。bean 处于创建中，也就是说 bean 在初始化但是没有完成初始化
+				&& isSingletonCurrentlyInCreation(beanName)) {
 			// 从 earlySingletonObjects 获取
 			singletonObject = this.earlySingletonObjects.get(beanName);
 			// earlySingletonObjects 中没有，且允许提前创建
-			if (singletonObject == null && allowEarlyReference) {
+			if (singletonObject == null
+					// 是否允许从 singletonFactories 缓存中通过#getObject()方法，拿到对象
+					&& allowEarlyReference) {
 				// 加锁
 				synchronized (this.singletonObjects) {
 					// Consistent creation of early reference within full singleton lock
@@ -217,8 +221,10 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 								// 获得bean
 								singletonObject = singletonFactory.getObject();
 								// 添加 bean 到 earlySingletonObjects 中
+								// 添加到二级缓存中
 								this.earlySingletonObjects.put(beanName, singletonObject);
 								// 从 singletonFactories 中移除对应的 ObjectFactory
+								// 添加到三级缓存中
 								this.singletonFactories.remove(beanName);
 							}
 						}
