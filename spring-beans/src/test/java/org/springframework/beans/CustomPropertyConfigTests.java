@@ -72,7 +72,7 @@ public class CustomPropertyConfigTests extends PropertyPlaceholderConfigurer {
 	public void test() {
 		ApplicationContext context = new ClassPathXmlApplicationContext("org/springframework/beans/spring.xml");
 
-		StudentService studentService = (StudentService) context.getBean("studentService");
+		StudentService studentService = (StudentService) context.getBean("student");
 		System.out.println("student name abc:" + studentService.getName());
 	}
 }
