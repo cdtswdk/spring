@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	<bean id="PropertyPlaceholderConfigurer" class="org.springframework.beans.CustomPropertyConfigTests">
+		<property name="locations">
+			<list>
+<!--				<value>classpath:org/springframework/beans/config/*.properties</value>-->
+				<value>classpath:org/springframework/beans/config/application-dev.properties</value>
+				<value>classpath:org/springframework/beans/config/application-test.properties</value>
+				<value>classpath:org/springframework/beans/config/application-prod.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="studentService" class="org.springframework.beans.pojo.StudentService">
+		<property name="name" value="${student.name}"/>
+	</bean>
+</beans>
