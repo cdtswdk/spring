@@ -69,6 +69,7 @@ public class SourceFilteringListener implements GenericApplicationListener {
 
 	@Override
 	public void onApplicationEvent(ApplicationEvent event) {
+		// 判断事件的来源
 		if (event.getSource() == this.source) {
 			onApplicationEventInternal(event);
 		}
