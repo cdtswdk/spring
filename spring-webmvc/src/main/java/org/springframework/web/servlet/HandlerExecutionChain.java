@@ -143,14 +143,20 @@ public class HandlerExecutionChain {
 	 * that this interceptor has already dealt with the response itself.
 	 */
 	boolean applyPreHandle(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		// 遍历拦截器数组
 		for (int i = 0; i < this.interceptorList.size(); i++) {
 			HandlerInterceptor interceptor = this.interceptorList.get(i);
+			// 前置处理
 			if (!interceptor.preHandle(request, response, this.handler)) {
+				// 触发已完成处理
 				triggerAfterCompletion(request, response, null);
+				// 返回 false ，前置处理失败
 				return false;
 			}
+			// 标记 interceptorIndex 位置
 			this.interceptorIndex = i;
 		}
+		// 返回 true ，前置处理成功
 		return true;
 	}
 
@@ -160,8 +166,10 @@ public class HandlerExecutionChain {
 	void applyPostHandle(HttpServletRequest request, HttpServletResponse response, @Nullable ModelAndView mv)
 			throws Exception {
 
+		// 遍历拦截器数组
 		for (int i = this.interceptorList.size() - 1; i >= 0; i--) {
 			HandlerInterceptor interceptor = this.interceptorList.get(i);
+			// 后置处理
 			interceptor.postHandle(request, response, this.handler, mv);
 		}
 	}
@@ -172,9 +180,11 @@ public class HandlerExecutionChain {
 	 * has successfully completed and returned true.
 	 */
 	void triggerAfterCompletion(HttpServletRequest request, HttpServletResponse response, @Nullable Exception ex) {
+		// 倒序遍历拦截器数组
 		for (int i = this.interceptorIndex; i >= 0; i--) {
 			HandlerInterceptor interceptor = this.interceptorList.get(i);
 			try {
+				// 已完成处理
 				interceptor.afterCompletion(request, response, this.handler, ex);
 			}
 			catch (Throwable ex2) {

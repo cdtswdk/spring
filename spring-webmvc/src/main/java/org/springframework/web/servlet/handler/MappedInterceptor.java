@@ -16,11 +16,6 @@
 
 package org.springframework.web.servlet.handler;
 
-import java.util.Arrays;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.http.server.PathContainer;
 import org.springframework.lang.Nullable;
 import org.springframework.util.AntPathMatcher;
@@ -35,6 +30,10 @@ import org.springframework.web.util.UrlPathHelper;
 import org.springframework.web.util.pattern.PathPattern;
 import org.springframework.web.util.pattern.PathPatternParser;
 import org.springframework.web.util.pattern.PatternParseException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
 
 /**
  * Wraps a {@link HandlerInterceptor} and uses URL patterns to determine whether
@@ -64,9 +63,11 @@ public final class MappedInterceptor implements HandlerInterceptor {
 	private static PathMatcher defaultPathMatcher = new AntPathMatcher();
 
 
+	// 匹配的路径
 	@Nullable
 	private final PatternAdapter[] includePatterns;
 
+	// 不匹配的路径
 	@Nullable
 	private final PatternAdapter[] excludePatterns;
 
@@ -189,6 +190,7 @@ public final class MappedInterceptor implements HandlerInterceptor {
 			path = path.toString();
 		}
 		boolean isPathContainer = (path instanceof PathContainer);
+
 		if (!ObjectUtils.isEmpty(this.excludePatterns)) {
 			for (PatternAdapter adapter : this.excludePatterns) {
 				if (adapter.match(path, isPathContainer, this.pathMatcher)) {
@@ -217,6 +219,7 @@ public final class MappedInterceptor implements HandlerInterceptor {
 	@Deprecated
 	public boolean matches(String lookupPath, PathMatcher pathMatcher) {
 		pathMatcher = (this.pathMatcher != defaultPathMatcher ? this.pathMatcher : pathMatcher);
+		// 先排重
 		if (!ObjectUtils.isEmpty(this.excludePatterns)) {
 			for (PatternAdapter adapter : this.excludePatterns) {
 				if (pathMatcher.match(adapter.getPatternString(), lookupPath)) {
@@ -224,9 +227,11 @@ public final class MappedInterceptor implements HandlerInterceptor {
 				}
 			}
 		}
+		// 特殊，如果包含为空，则默认就是包含
 		if (ObjectUtils.isEmpty(this.includePatterns)) {
 			return true;
 		}
+		// 后包含
 		for (PatternAdapter adapter : this.includePatterns) {
 			if (pathMatcher.match(adapter.getPatternString(), lookupPath)) {
 				return true;

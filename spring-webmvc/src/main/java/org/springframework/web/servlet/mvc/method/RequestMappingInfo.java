@@ -16,12 +16,6 @@
 
 package org.springframework.web.servlet.mvc.method;
 
-import java.util.List;
-import java.util.Set;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.http.HttpMethod;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -31,20 +25,17 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.accept.ContentNegotiationManager;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.handler.AbstractHandlerMapping;
-import org.springframework.web.servlet.mvc.condition.ConsumesRequestCondition;
-import org.springframework.web.servlet.mvc.condition.HeadersRequestCondition;
-import org.springframework.web.servlet.mvc.condition.ParamsRequestCondition;
-import org.springframework.web.servlet.mvc.condition.PathPatternsRequestCondition;
-import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
-import org.springframework.web.servlet.mvc.condition.ProducesRequestCondition;
-import org.springframework.web.servlet.mvc.condition.RequestCondition;
-import org.springframework.web.servlet.mvc.condition.RequestConditionHolder;
-import org.springframework.web.servlet.mvc.condition.RequestMethodsRequestCondition;
+import org.springframework.web.servlet.mvc.condition.*;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.util.ServletRequestPathUtils;
 import org.springframework.web.util.UrlPathHelper;
 import org.springframework.web.util.pattern.PathPattern;
 import org.springframework.web.util.pattern.PathPatternParser;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Request mapping information. A composite for the the following conditions:
@@ -88,19 +79,24 @@ public final class RequestMappingInfo implements RequestCondition<RequestMapping
 	@Nullable
 	private final PathPatternsRequestCondition pathPatternsCondition;
 
+	// 请求路径的条件
 	@Nullable
 	private final PatternsRequestCondition patternsCondition;
 
+	// 请求方法的条件
 	private final RequestMethodsRequestCondition methodsCondition;
 
+	// 参数的条件
 	private final ParamsRequestCondition paramsCondition;
 
 	private final HeadersRequestCondition headersCondition;
 
+	// 可消费的 Content-Type 的条件
 	private final ConsumesRequestCondition consumesCondition;
 
 	private final ProducesRequestCondition producesCondition;
 
+	// 自定义的条件
 	private final RequestConditionHolder customConditionHolder;
 
 	private final int hashCode;
@@ -370,10 +366,14 @@ public final class RequestMappingInfo implements RequestCondition<RequestMapping
 	 * patterns that match to the current request, sorted with best matching
 	 * patterns on top.
 	 * @return a new instance in case of a match; or {@code null} otherwise
+	 *
+	 * 从当前 RequestMappingInfo 获得匹配的条件。
+	 * 如果匹配，则基于其匹配的条件，创建新的 RequestMappingInfo 对象。如果不匹配，则返回 null 。
 	 */
 	@Override
 	@Nullable
 	public RequestMappingInfo getMatchingCondition(HttpServletRequest request) {
+		// 匹配 methodsCondition、paramsCondition、headersCondition、consumesCondition、producesCondition
 		RequestMethodsRequestCondition methods = this.methodsCondition.getMatchingCondition(request);
 		if (methods == null) {
 			return null;
@@ -394,6 +394,7 @@ public final class RequestMappingInfo implements RequestCondition<RequestMapping
 		if (produces == null) {
 			return null;
 		}
+		// 匹配 pathPatternsCondition
 		PathPatternsRequestCondition pathPatterns = null;
 		if (this.pathPatternsCondition != null) {
 			pathPatterns = this.pathPatternsCondition.getMatchingCondition(request);
@@ -401,6 +402,7 @@ public final class RequestMappingInfo implements RequestCondition<RequestMapping
 				return null;
 			}
 		}
+		// 匹配 patternsCondition
 		PatternsRequestCondition patterns = null;
 		if (this.patternsCondition != null) {
 			patterns = this.patternsCondition.getMatchingCondition(request);
@@ -408,6 +410,7 @@ public final class RequestMappingInfo implements RequestCondition<RequestMapping
 				return null;
 			}
 		}
+		// 匹配 customConditionHolder
 		RequestConditionHolder custom = this.customConditionHolder.getMatchingCondition(request);
 		if (custom == null) {
 			return null;
@@ -427,37 +430,45 @@ public final class RequestMappingInfo implements RequestCondition<RequestMapping
 	public int compareTo(RequestMappingInfo other, HttpServletRequest request) {
 		int result;
 		// Automatic vs explicit HTTP HEAD mapping
+		// 针对 HEAD 请求方法，特殊处理
 		if (HttpMethod.HEAD.matches(request.getMethod())) {
 			result = this.methodsCondition.compareTo(other.getMethodsCondition(), request);
 			if (result != 0) {
 				return result;
 			}
 		}
+		// 比较 patternsCondition
 		result = getActivePatternsCondition().compareTo(other.getActivePatternsCondition(), request);
 		if (result != 0) {
 			return result;
 		}
+		// 比较 paramsCondition
 		result = this.paramsCondition.compareTo(other.getParamsCondition(), request);
 		if (result != 0) {
 			return result;
 		}
+		// 比较 headersCondition
 		result = this.headersCondition.compareTo(other.getHeadersCondition(), request);
 		if (result != 0) {
 			return result;
 		}
+		// 比较 consumesCondition
 		result = this.consumesCondition.compareTo(other.getConsumesCondition(), request);
 		if (result != 0) {
 			return result;
 		}
+		// 比较 producesCondition
 		result = this.producesCondition.compareTo(other.getProducesCondition(), request);
 		if (result != 0) {
 			return result;
 		}
 		// Implicit (no method) vs explicit HTTP method mappings
+		// 比较 methodsCondition
 		result = this.methodsCondition.compareTo(other.getMethodsCondition(), request);
 		if (result != 0) {
 			return result;
 		}
+		// 比较 customConditionHolder
 		result = this.customConditionHolder.compareTo(other.customConditionHolder, request);
 		if (result != 0) {
 			return result;
