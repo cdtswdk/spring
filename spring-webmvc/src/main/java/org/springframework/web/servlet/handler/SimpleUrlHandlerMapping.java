@@ -16,14 +16,10 @@
 
 package org.springframework.web.servlet.handler;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 import org.springframework.beans.BeansException;
 import org.springframework.util.CollectionUtils;
+
+import java.util.*;
 
 /**
  * Implementation of the {@link org.springframework.web.servlet.HandlerMapping}
@@ -58,6 +54,11 @@ import org.springframework.util.CollectionUtils;
  */
 public class SimpleUrlHandlerMapping extends AbstractUrlHandlerMapping {
 
+	/**
+	 * 配置的 URL 与处理器的映射
+	 *
+	 * 最终，会调用 {@link #registerHandlers(Map)} 进行注册到 {@link AbstractUrlHandlerMapping#handlerMap} 中
+	 */
 	private final Map<String, Object> urlMap = new LinkedHashMap<>();
 
 
@@ -135,7 +136,9 @@ public class SimpleUrlHandlerMapping extends AbstractUrlHandlerMapping {
 	 */
 	@Override
 	public void initApplicationContext() throws BeansException {
+		// 调用父类方法，进行初始化
 		super.initApplicationContext();
+		// 将 urlMap 配置，注册处理器
 		registerHandlers(this.urlMap);
 	}
 
@@ -144,23 +147,32 @@ public class SimpleUrlHandlerMapping extends AbstractUrlHandlerMapping {
 	 * @param urlMap a Map with URL paths as keys and handler beans or bean names as values
 	 * @throws BeansException if a handler couldn't be registered
 	 * @throws IllegalStateException if there is a conflicting handler registered
+	 *
+	 * 将 urlMap 配置，注册到处理器
 	 */
 	protected void registerHandlers(Map<String, Object> urlMap) throws BeansException {
+		// 为空，则仅打印日志
 		if (urlMap.isEmpty()) {
 			logger.trace("No patterns in " + formatMappingName());
 		}
+		// 非空，则进行注册
 		else {
+			// 遍历 urlMap 数组，逐个注册处理器
 			urlMap.forEach((url, handler) -> {
+				// 附加 / 前缀
 				// Prepend with slash if not already present.
 				if (!url.startsWith("/")) {
 					url = "/" + url;
 				}
 				// Remove whitespace from handler bean name.
+				// trim 方法，去掉头尾空格
 				if (handler instanceof String) {
 					handler = ((String) handler).trim();
 				}
+				// 【核心代码】注册处理器
 				registerHandler(url, handler);
 			});
+			// 打印日志
 			logMappings();
 		}
 	}
