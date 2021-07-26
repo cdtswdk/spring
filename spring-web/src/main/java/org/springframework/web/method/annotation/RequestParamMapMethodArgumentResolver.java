@@ -16,13 +16,6 @@
 
 package org.springframework.web.method.annotation;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.Part;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.lang.Nullable;
@@ -38,6 +31,12 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartRequest;
 import org.springframework.web.multipart.support.MultipartResolutionDelegate;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Resolves {@link Map} method arguments annotated with an @{@link RequestParam}
@@ -74,6 +73,7 @@ public class RequestParamMapMethodArgumentResolver implements HandlerMethodArgum
 
 		ResolvableType resolvableType = ResolvableType.forMethodParameter(parameter);
 
+		// MultiValueMap 类型的处理
 		if (MultiValueMap.class.isAssignableFrom(parameter.getParameterType())) {
 			// MultiValueMap
 			Class<?> valueType = resolvableType.as(MultiValueMap.class).getGeneric(1).resolve();
@@ -94,6 +94,7 @@ public class RequestParamMapMethodArgumentResolver implements HandlerMethodArgum
 				return new LinkedMultiValueMap<>(0);
 			}
 			else {
+				// 获得请求的参数集合
 				Map<String, String[]> parameterMap = webRequest.getParameterMap();
 				MultiValueMap<String, String> result = new LinkedMultiValueMap<>(parameterMap.size());
 				parameterMap.forEach((key, values) -> {
@@ -105,6 +106,7 @@ public class RequestParamMapMethodArgumentResolver implements HandlerMethodArgum
 			}
 		}
 
+		// 普通 Map 类型的处理
 		else {
 			// Regular Map
 			Class<?> valueType = resolvableType.asMap().getGeneric(1).resolve();
